@@ -43,7 +43,7 @@ class Example(QMainWindow):
         self.scale = 1
 
         self.setGeometry(100, 100, *SCREEN_SIZE)
-        self.setWindowTitle('Задание 1')
+        self.setWindowTitle('Задание 2')
         self.get_image(self.coords, self.scale)
 
         self.pixmap = QPixmap('map.png')

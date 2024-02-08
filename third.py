@@ -39,9 +39,7 @@ class Example(QMainWindow):
         response = requests.get(link, search_params)
 
         if not response:
-            print("Ошибка выполнения запроса:")
-            print("Http статус:", response.status_code, "(", response.reason, ")")
-            quit()
+            return 'Error'
 
         self.map_file = f"map.png"
         with open(self.map_file, "wb") as file:
@@ -52,7 +50,7 @@ class Example(QMainWindow):
         self.scale = 1
 
         self.setGeometry(100, 100, *SCREEN_SIZE)
-        self.setWindowTitle('Задание 1')
+        self.setWindowTitle('Задание 3')
         self.get_image(self.coords, self.scale)
 
         self.pixmap = QPixmap('map.png')
@@ -71,29 +69,27 @@ class Example(QMainWindow):
             coords[0] = str(float(coords[0]) - abs(step))
             if abs(float(coords[0])) >= 180:
                 return
-            self.coords = ','.join(coords)
         elif event.key() == Qt.Key_Right:
             coords = self.coords.split(',')
             step = 360 / pow(2, self.scale)
             coords[0] = str(float(coords[0]) + abs(step))
             if abs(float(coords[0])) >= 180:
                 return
-            self.coords = ','.join(coords)
         elif event.key() == Qt.Key_Up:
             coords = self.coords.split(',')
             step = 180 / pow(2, self.scale)
             coords[1] = str(float(coords[1]) + abs(step))
             if abs(float(coords[1])) >= 90:
                 return
-            self.coords = ','.join(coords)
         elif event.key() == Qt.Key_Down:
             coords = self.coords.split(',')
             step = 180 / pow(2, self.scale)
             coords[1] = str(float(coords[1]) - abs(step))
             if abs(float(coords[1])) >= 90:
                 return
-            self.coords = ','.join(coords)
-
+        if event.key() in (Qt.Key_Down, Qt.Key_Up, Qt.Key_Right, Qt.Key_Left):
+            if self.get_image(','.join(coords), self.scale) != 'Error':
+                self.coords = ','.join(coords)
         self.get_image(self.coords, self.scale)
         self.image.setPixmap(QPixmap('map.png'))
 
