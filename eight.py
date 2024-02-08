@@ -3,7 +3,7 @@ import sys
 
 import requests
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QComboBox, QPushButton
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QComboBox, QPushButton, QTextBrowser
 from PyQt5.QtCore import Qt
 
 SCREEN_SIZE = [600, 520]
@@ -33,7 +33,7 @@ class Example(QMainWindow):
             'z': scale,
             'l': self.cur_map_type
         }
-        if self.now_point:
+        if self.now_point[0]:
             search_params['pt'] = self.now_point
         link = 'http://static-maps.yandex.ru/1.x/'
 
@@ -45,22 +45,19 @@ class Example(QMainWindow):
         self.map_file = f"map.png"
         with open(self.map_file, "wb") as file:
             file.write(response.content)
+        self.text_to_adress.setText(self.now_point[1])
 
     def initUI(self):
         self.coords = "35.91184997558594,56.85956192016602"
         self.scale = 1
-        self.now_point = ''
+        self.now_point = ('', '')
 
         self.cur_map_type = 'map'
         self.setGeometry(100, 100, *SCREEN_SIZE)
-        self.setWindowTitle('Задание 7')
-        self.get_image(self.coords, self.scale)
+        self.setWindowTitle('Задание 8')
 
-        # Изображение
-        self.pixmap = QPixmap('map.png')
         self.image = QLabel(self)
         self.image.resize(600, 450)
-        self.image.setPixmap(self.pixmap)
 
         self.combobox = Combo(self)
         self.combobox.move(480, 10)
@@ -73,6 +70,11 @@ class Example(QMainWindow):
         self.lineedit.move(200, 465)
         self.lineedit.resize(190, 25)
 
+        self.text_to_adress = QTextBrowser(self)
+        self.text_to_adress.setPlaceholderText('Адрес объекта')
+        self.text_to_adress.move(45, 465)
+        self.text_to_adress.resize(150, 50)
+
         self.btn_lineedit = QPushButton('Найти', self)
         self.btn_lineedit.move(200, 490)
         self.btn_lineedit.resize(190, 25)
@@ -83,10 +85,15 @@ class Example(QMainWindow):
         self.btn_reset.resize(90, 25)
         self.btn_reset.clicked.connect(self.btn_reset_click)
 
+        self.get_image(self.coords, self.scale)
+        self.pixmap = QPixmap('map.png')
+        self.image.setPixmap(self.pixmap)
+
     def btn_reset_click(self):
-        self.now_point = ''
+        self.now_point = ('', '')
         self.get_image(self.coords, self.scale)
         self.image.setPixmap(QPixmap(self.map_file))
+        self.text_to_adress.setText(self.now_point[1])
 
     def btn_lineedit_click(self):
         if not self.lineedit.text():
@@ -103,6 +110,8 @@ class Example(QMainWindow):
         data = response.json()
         try:
             coords = data['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['Point']['pos'].split()
+            adress = data['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['metaDataProperty'][
+                'GeocoderMetaData']['text']
         except Exception:
             return
         coords = ','.join(coords)
@@ -111,11 +120,12 @@ class Example(QMainWindow):
             self.scale = 8
         elif self.scale > 12:
             self.scale = 12
-        self.now_point = f'{coords},pm2lbm'
+        self.now_point = (f'{coords},pm2lbm', adress)
 
         self.get_image(coords, self.scale)
         self.coords = coords
         self.image.setPixmap(QPixmap(self.map_file))
+        self.text_to_adress.setText(self.now_point[1])
 
     def change_map_type(self, text):
         translate = {'Карта': 'map', 'Спутник': 'sat', 'Гибрид': 'sat,skl'}
