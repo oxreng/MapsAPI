@@ -137,7 +137,7 @@ class Example(QMainWindow):
             self.scale = 8
         elif self.scale > 12:
             self.scale = 12
-        if postal_code is None:
+        if postal_code is None or not self.is_postal_code:
             self.now_point = (f'{coords},pm2lbm', adress)
         else:
             self.now_point = (f'{coords},pm2lbm', f'{adress}, {postal_code}')
